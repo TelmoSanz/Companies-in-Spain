@@ -354,11 +354,10 @@ class App(tk.Tk):
 
         cols = ("ID", "Nombre", "Sector", "Provincia", "Comunidad")
         self.tree = ttk.Treeview(table_frame, columns=cols, show="headings", height=14)
-        self.tree.heading("ID",        text="ID")
-        self.tree.heading("Nombre",    text="Nombre")
-        self.tree.heading("Sector",    text="Sector")
-        self.tree.heading("Provincia", text="Provincia")
-        self.tree.heading("Comunidad", text="Comunidad")
+        self._sort_reverse = {c: False for c in cols}
+        for col in cols:
+            self.tree.heading(col, text=col,
+                command=lambda c=col: self._sort_column(c))
         self.tree.column("ID",        width=30,  anchor="center")
         self.tree.column("Nombre",    width=140)
         self.tree.column("Sector",    width=110)
@@ -654,6 +653,27 @@ class App(tk.Tk):
         self.ent_lon.delete(0, tk.END)
         self.ent_link.delete(0, tk.END)
         self._selected_id = None
+
+    def _sort_column(self, col):
+        """Ordena la tabla al hacer clic en una cabecera. Alterna asc/desc."""
+        reverse = self._sort_reverse[col]
+        # Recoger todos los items actuales
+        items = [(self.tree.set(k, col), k) for k in self.tree.get_children("")]
+        # Ordenar: ID como numero, el resto como texto
+        if col == "ID":
+            items.sort(key=lambda x: int(x[0]) if x[0].isdigit() else 0, reverse=reverse)
+        else:
+            items.sort(key=lambda x: x[0].lower(), reverse=reverse)
+        # Recolocar filas en el nuevo orden
+        for index, (_, k) in enumerate(items):
+            self.tree.move(k, "", index)
+        # Actualizar flecha en la cabecera
+        arrow = " ▲" if not reverse else " ▼"
+        for c in self._sort_reverse:
+            self.tree.heading(c, text=c)          # limpiar flechas anteriores
+        self.tree.heading(col, text=col + arrow)
+        # Alternar direccion para el proximo clic
+        self._sort_reverse[col] = not reverse
 
     def _refresh_table(self):
         self.tree.delete(*self.tree.get_children())
