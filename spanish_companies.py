@@ -18,6 +18,7 @@ import geopandas as gpd
 import os
 import zipfile
 import urllib.request
+import pathlib
 
 # ==============================================================
 # DATOS GEOGRAFICOS: provincias y sus comunidades autonomas
@@ -99,7 +100,7 @@ SECTOR_COLORES = {
     "Otro":              "#aaaaaa",
 }
 
-DB_PATH = "empresas.db"
+DB_PATH = str(pathlib.Path(__file__).parent / "empresas.db")
 
 # ==============================================================
 # GEODATOS DE PROVINCIAS ESPANOLAS
